@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gioco del Tris</title>
+    <style>
+        /* Stile generale del corpo */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #282c34; /* Sfondo scuro */
+            color: #61dafb; /* Testo blu chiaro */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            height: 100vh; /* Altezza della finestra */
+        }
+
+        /* Stile per il contenitore principale */
+        .header {
+            width: 100%;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2em;
+            color: #61dafb; /* Colore del titolo */
+        }
+
+        .controls {
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            font-size: 18px; /* Testo più grande */
+            padding: 10px 20px; /* Dimensione pulsanti */
+            margin: 10px; /* Spaziatura tra i pulsanti */
+            border: none;
+            border-radius: 5px; /* Angoli arrotondati */
+            background-image: linear-gradient(135deg, #61dafb, #3b3f46); /* Texture pulsanti */
+            color: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Ombra */
+            transition: transform 0.2s, background-color 0.3s ease-in-out;
+        }
+
+        button:hover {
+            background-image: linear-gradient(135deg, #50545d, #32cd32); /* Texture hover */
+            transform: scale(1.1); /* Leggera animazione */
+        }
+
+        /* Stile per la griglia */
+        .grid-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex: 1; /* Occupa lo spazio disponibile */
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 5px;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            font-size: 32px;
+            text-align: center;
+            line-height: 100px;
+            border: 2px solid #61dafb; /* Bordo blu chiaro */
+            background-color: #3b3f46; /* Griglia con sfondo scuro */
+            color: #ffffff;           /* Testo bianco */
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .cell:hover {
+            background-color: #50545d;
+            transform: scale(1.05); /* Leggera animazione */
+        }
+
+        #winner {
+            margin-top: 10px;
+            font-size: 24px;
+            color: #32cd32; /* Verde brillante per il vincitore */
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Gioco del Tris</h1>
+        <div class="controls">
+            <button onclick="setMode('bot')">Gioca contro il bot</button>
+            <button onclick="setMode('player')">Gioca contro un altro giocatore</button>
+        </div>
+    </div>
+    <div class="grid-container">
+        <div class="grid">
+            <div class="cell" id="0"></div>
+            <div class="cell" id="1"></div>
+            <div class="cell" id="2"></div>
+            <div class="cell" id="3"></div>
+            <div class="cell" id="4"></div>
+            <div class="cell" id="5"></div>
+            <div class="cell" id="6"></div>
+            <div class="cell" id="7"></div>
+            <div class="cell" id="8"></div>
+        </div>
+    </div>
+    <h2 id="winner"></h2>
+    <script>
+        const cells = document.querySelectorAll(".cell");
+        let currentPlayer = "X";
+        let againstBot = false;
+
+        function setMode(mode) {
+            if (mode === "bot") {
+                againstBot = true;
+                document.getElementById("winner").textContent = "Modalità: contro il bot!";
+            } else if (mode === "player") {
+                againstBot = false;
+                document.getElementById("winner").textContent = "Modalità: due giocatori!";
+            }
+            resetGame();
+        }
+
+        function resetGame() {
+            cells.forEach(cell => cell.textContent = "");
+            document.getElementById("winner").textContent = "";
+            currentPlayer = "X";
+        }
+
+        function checkWinner() {
+            const winningCombinations = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+
+            const grid = Array.from(cells).map(cell => cell.textContent);
+            for (const combo of winningCombinations) {
+                const [a, b, c] = combo;
+                if (grid[a] && grid[a] === grid[b] && grid[a] === grid[c]) {
+                    document.getElementById("winner").textContent = `Il vincitore è ${grid[a]}!`;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function botMove() {
+            let emptyCells = Array.from(cells).filter(cell => cell.textContent === "");
+            if (emptyCells.length > 0) {
+                const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                randomCell.textContent = "O";
+                if (!checkWinner()) {
+                    currentPlayer = "X";
+                }
+            }
+        }
+
+        cells.forEach(cell => {
+            cell.addEventListener("click", () => {
+                if (cell.textContent === "" && document.getElementById("winner").textContent === "") {
+                    cell.textContent = currentPlayer;
+                    if (!checkWinner()) {
+                        if (againstBot && currentPlayer === "X") {
+                            currentPlayer = "O";
+                            setTimeout(botMove, 500);
+                        } else {
+                            currentPlayer = currentPlayer === "X" ? "O" : "X";
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+<script src="tris.js"></script>
